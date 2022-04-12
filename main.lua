@@ -6,18 +6,6 @@ local wrp = require("wrp")
 local space = nil
 local tank
 
-local init_tank = {
-   type = "tank",
-   x = 100,
-   y = 100,
-   w = 200,
-   h = 200,
-   turret_dx = 0,
-   turret_dy = 0,
-   turret_w = 100,
-   turret_h = 100,
-}
-
 local rect_body = {
    x = 87,
    y = 73,
@@ -30,6 +18,21 @@ local rect_turret = {
    y = 0,
    w = 54,
    h = 160,
+}
+
+local init_tank = {
+   type = "tank",
+   x = 200,
+   y = 100,
+   w = rect_body.w,
+   h = rect_body.h,
+
+
+   turret_dx = 20,
+   turret_dy = -80,
+
+   turret_w = rect_turret.w,
+   turret_h = rect_turret.h,
 }
 
 
@@ -108,7 +111,7 @@ function love.draw()
 
       gr.setColor(white)
       gr.draw(tex_body, quad_body, x, y)
-      gr.draw(tex_turret, quad_turret, x, y)
+      gr.draw(tex_turret, quad_turret, tur_x, tur_y)
 
    end)
 

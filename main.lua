@@ -1,6 +1,7 @@
 local _tl_compat; if (tonumber((_VERSION or ''):match('[%d.]*$')) or 0) < 5.3 then local p, m = pcall(require, 'compat53.module'); if p then _tl_compat = m end end; local ipairs = _tl_compat and _tl_compat.ipairs or ipairs
 
 
+require("mobdebug").start()
 require("love")
 local wrp = require("wrp")
 local space = nil
@@ -13,19 +14,19 @@ local rect_body = {
    h = 110,
 }
 
-
-
-
-
-
-
-
 local rect_turret = {
    x = 101,
    y = 0,
    w = 54,
-   h = 40,
+   h = 160,
 }
+
+
+
+
+
+
+
 
 local init_tank = {
    type = "tank",

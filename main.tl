@@ -1,6 +1,7 @@
 -- vim: set colorcolumn=85
 -- vim: fdm=marker
 
+require("mobdebug").start()
 require "love"
 local wrp = require "wrp"
 local space: wrp.Space = nil
@@ -13,19 +14,19 @@ local rect_body = {
     h = 110,
 }
 
---local rect_turret = {
-    --x = 101,
-    --y = 0,
-    --w = 54,
-    --h = 160,
---}
-
 local rect_turret = {
     x = 101,
     y = 0,
     w = 54,
-    h = 40,
+    h = 160,
 }
+
+--local rect_turret = {
+    --x = 101,
+    --y = 0,
+    --w = 54,
+    --h = 40,
+--}
 
 local init_tank = {
     type = "tank",

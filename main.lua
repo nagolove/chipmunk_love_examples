@@ -13,11 +13,18 @@ local rect_body = {
    h = 110,
 }
 
+
+
+
+
+
+
+
 local rect_turret = {
    x = 101,
    y = 0,
    w = 54,
-   h = 160,
+   h = 40,
 }
 
 local init_tank = {
@@ -28,8 +35,10 @@ local init_tank = {
    h = rect_body.h,
 
 
-   turret_dx = 20,
-   turret_dy = -80,
+
+
+   turret_dx = 0,
+   turret_dy = 0,
 
    turret_w = rect_turret.w,
    turret_h = rect_turret.h,
@@ -39,13 +48,23 @@ local init_tank = {
 local dx = 100
 local dy = 100
 
+local counter = 1
+
+local function spawn()
+   local self = {
+      id = counter,
+   }
+   counter = counter + 1
+   tank = wrp.tank_new(
+   init_tank, self)
+
+end
+
 function love.load(_)
    space = wrp.space_new(.2)
    wrp.space_set(space)
 
-   tank = wrp.tank_new(
-   init_tank, {})
-
+   spawn()
 end
 
 local gr = love.graphics
@@ -74,6 +93,18 @@ tex_turret)
 
 function love.update(dt)
    wrp.space_step(dt)
+
+   local kb = love.keyboard
+   if kb.isDown("left") then
+
+      tank:apply_impulse(-0.2, 0, 128, 128)
+
+   end
+   if kb.isDown("right") then
+
+      tank:apply_impulse(0.2, 0, 128, 128)
+
+   end
 end
 
 local white = { 1, 1, 1, 1 }
@@ -110,8 +141,8 @@ function love.draw()
       end
 
       gr.setColor(white)
-      gr.draw(tex_body, quad_body, x, y)
-      gr.draw(tex_turret, quad_turret, tur_x, tur_y)
+      gr.draw(tex_body, quad_body, x, y, angle)
+      gr.draw(tex_turret, quad_turret, tur_x, tur_y, tur_angle)
 
    end)
 
@@ -131,11 +162,8 @@ function love.keyreleased(_, _)
 end
 
 function love.keypressed(_, key)
-   if key == "left" then
-      tank:apply_impulse(0, 0.1, 0, 0)
-   end
-   if key == "right" then
-      tank:apply_impulse(0, -0.1, 0, 0)
+   if key == 'escape' then
+      love.event.quit()
    end
 end
 

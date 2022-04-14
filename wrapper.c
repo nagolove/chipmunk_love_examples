@@ -470,6 +470,10 @@ static int tank_new(lua_State *lua) {
     // [.., init_table, assoc_table, {id}]
     // Группа столкновений для корпуса и башни устанавливается из id танка.
     int collision_group = lua_tonumber(lua, -1);
+    if (lua_isnil(lua, -1)) {
+        LOG("tank_new: there is no 'id' value\n");
+        exit(1);
+    }
     lua_remove(lua, -1);
     
 #ifdef LOG_TANK_NEW

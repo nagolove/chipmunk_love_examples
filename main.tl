@@ -36,10 +36,10 @@ local init_tank = {
     h = rect_body.h,
 
     -- Смещение координат турели
-    --turret_dx = 20,
-    --turret_dy = -80,
-    turret_dx = 0,
-    turret_dy = 0,
+    turret_dx = -40,
+    turret_dy = -80,
+    --turret_dx = 0,
+    --turret_dy = 0,
 
     turret_w = rect_turret.w,
     turret_h = rect_turret.h,
@@ -64,7 +64,7 @@ end
 function love.load(_: {string})
     space = wrp.space_new(.2)
     wrp.space_set(space)
-
+    wrp.space_set_debug_draw()
     spawn()
 end
 
@@ -105,6 +105,14 @@ function love.update(dt: number)
         --tank:apply_impulse(0, -0.1, 0, 0)
         tank:apply_impulse(0.2, 0, 128, 128)
         --print('right')
+    end
+    local impx = 10
+    local px, py = 0, 0
+    if kb.isDown('up') then
+        tank:apply_impulse(0, -impx, px, py)
+    end
+    if kb.isDown('down') then
+        tank:apply_impulse(0, impx, px, py)
     end
 end
 

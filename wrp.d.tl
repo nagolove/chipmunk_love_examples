@@ -8,6 +8,7 @@ local record Wrapper
     space_free: function(Space)
     space_set: function(Space)
     space_step: function(dt: number)
+    space_set_debug_draw: function()
 
     type EachSegmentCallback = function(x1: number, y1: number, x2: number, y2: number)
     type EachBodyCallback = function(x: number, y: number, angle: number, obj: any)

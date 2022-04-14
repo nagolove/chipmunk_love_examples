@@ -338,11 +338,19 @@ void tank_turret_new(
     lua_pushstring(lua, "turret_w");
     lua_gettable(lua, -2);
     w = (int)lua_tonumber(lua, -1);
+    if (lua_isnil(lua, -1)) {
+        LOG("tank_turret_new: turret_w is nil\n");
+        exit(1);
+    }
     lua_remove(lua, -1);
 
     lua_pushstring(lua, "turret_h");
     lua_gettable(lua, -2);
     h = (int)lua_tonumber(lua, -1);
+    if (lua_isnil(lua, -1)) {
+        LOG("tank_turret_new: turret_h is nil\n");
+        exit(1);
+    }
     lua_remove(lua, -1);
 
     LOG("tank_turret_new: w = %f\n", w);
@@ -391,17 +399,28 @@ void tank_turret_new(
     lua_pushstring(lua, "turret_dx");
     lua_gettable(lua, -2);
     turret_offset.x = (int)lua_tonumber(lua, -1);
+    if (lua_isnil(lua, -1)) {
+        LOG("tank_turret_new: turret_dx is nil\n");
+        exit(1);
+    }
     lua_remove(lua, -1);
 
     lua_pushstring(lua, "turret_dy");
     lua_gettable(lua, -2);
     turret_offset.y = (int)lua_tonumber(lua, -1);
+    if (lua_isnil(lua, -1)) {
+        LOG("tank_turret_new: turret_dy is nil\n");
+        exit(1);
+    }
     lua_remove(lua, -1);
 
     LOG("tank_turret_new: turret_dx = %f\n", turret_offset.x);
     LOG("tank_turret_new: turret_dy = %f\n", turret_offset.y);
 
-    cpVect pos = cpvadd(tank->body->p, turret_offset);
+    /*cpVect pos = cpvadd(tank->body->p, turret_offset);*/
+    cpVect pos = { .x = 0, .y = 0. };
+    pos.x += tank->body->p.x + turret_offset.x;
+    pos.y += tank->body->p.y + turret_offset.y;
     cpBodySetPosition(tank->turret, pos);
 
     cpSpaceAddBody(cur_space->space, tank->turret);
@@ -1511,6 +1530,124 @@ static const struct luaL_Reg Tank_methods[] =
     {NULL, NULL}
 };
 
+void dbg_drawCircle(
+        cpVect pos, 
+        cpFloat angle, 
+        cpFloat radius, 
+        cpSpaceDebugColor outlineColor, 
+        cpSpaceDebugColor fillColor, 
+        cpDataPointer data
+) {
+    lua_State *lua = data;
+    lua_pushvalue(lua, 1);
+    lua_pushnumber(lua, pos.x);
+    lua_pushnumber(lua, pos.y);
+    lua_pushnumber(lua, radius);
+    lua_call(lua, 3, 0);
+    lua_remove(lua, -1);
+}
+
+void dbg_drawSegment(
+        cpVect a, 
+        cpVect b, 
+        cpSpaceDebugColor color, 
+        cpDataPointer data
+) {
+    lua_State *lua = data;
+    lua_pushvalue(lua, 2);
+    lua_pushnumber(lua, a.x);
+    lua_pushnumber(lua, a.y);
+    lua_pushnumber(lua, b.x);
+    lua_pushnumber(lua, b.y);
+    lua_call(lua, 4, 0);
+    lua_remove(lua, -1);
+}
+
+void dbg_drawFatSegment(
+        cpVect a, 
+        cpVect b, 
+        cpFloat radius, 
+        cpSpaceDebugColor outlineColor, 
+        cpSpaceDebugColor fillColor, 
+        cpDataPointer data
+) {
+    lua_State *lua = data;
+    lua_pushvalue(lua, 3);
+    lua_pushnumber(lua, a.x);
+    lua_pushnumber(lua, a.y);
+    lua_pushnumber(lua, b.x);
+    lua_pushnumber(lua, b.y);
+    lua_pushnumber(lua, radius);
+    lua_call(lua, 5, 0);
+    lua_remove(lua, -1);
+}
+
+void dbg_drawPolygon(
+        int count, 
+        const cpVect *verts, 
+        cpFloat radius, 
+        cpSpaceDebugColor outlineColor, 
+        cpSpaceDebugColor fillColor, 
+        cpDataPointer data
+) {
+    lua_State *lua = data;
+    lua_pushvalue(lua, 4);
+    lua_newtable(lua);
+    int table_index = lua_gettop();
+    int arr_index = 1;
+    for (int i = 0; i < count; ++i) {
+        lua_pushnumber(lua, verts[i].x);
+        lua_rawseti(lua, table_index, arr_index++);
+        lua_pushnumber(lua, verts[i].y);
+        lua_rawseti(lua, table_index, arr_index++);
+    }
+    lua_pushnumber(lua, radius);
+    lua_call(lua, 2, 0);
+    lua_remove(lua, -1);
+}
+
+void dbg_drawDot(
+        cpFloat size, 
+        cpVect pos, 
+        cpSpaceDebugColor color, 
+        cpDataPointer data
+) {
+    lua_State *lua = data;
+    lua_pushvalue(lua, 5);
+    lua_pushnumber(lua, size);
+    lua_pushnumber(lua, pos.x);
+    lua_pushnumber(lua, pos.y);
+    lua_call(lua, 3, 0);
+    lua_remove(lua, -1);
+}
+
+static int space_set_debug_draw(lua_State *lua) {
+    CHECK_SPACE;
+    check_argsnum(lua, 5);
+
+    luaL_checktype(lua, 1, LUA_TFUNCTION); // circle
+    luaL_checktype(lua, 2, LUA_TFUNCTION); // segment
+    luaL_checktype(lua, 3, LUA_TFUNCTION); // fatsegment
+    luaL_checktype(lua, 4, LUA_TFUNCTION); // polygon
+    luaL_checktype(lua, 5, LUA_TFUNCTION); // dot
+
+    cpSpaceDebugDrawOptions options = {
+        .drawCircle = dbg_drawCircle,
+        .drawSegment = dbg_drawSegment,
+        .drawFatSegment = dbg_drawFatSegment,
+        .drawPolygon = dbg_drawPolygon,
+        .drawDot = dbg_drawDot,
+        .flags = CP_SPACE_DEBUG_DRAW_SHAPES | 
+            CP_SPACE_DEBUG_DRAW_CONSTRAINTS |
+            CP_SPACE_DEBUG_DRAW_COLLISION_POINTS,
+        .data = lua,
+    };
+
+    cpSpaceDebugDraw(cur_space->space, &options);
+
+    return 0;
+}
+
 extern int luaopen_wrp(lua_State *lua) {
     static const struct luaL_Reg functions[] =
     {
@@ -1521,6 +1658,7 @@ extern int luaopen_wrp(lua_State *lua) {
         // шаг симуляции
         {"space_step", space_step},
         {"space_set", space_set},
+        {"space_set_debug_draw", space_set_debug_draw},
 
         // вызов функции для всех тел в текущем пространстве
         /*{"query_all_shapes", query_all_shapes},*/

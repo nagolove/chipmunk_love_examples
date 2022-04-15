@@ -61,14 +61,56 @@ local function spawn()
     )
 end
 
+local gr = love.graphics
+local dbg_color = {0, 0.7, 0, 1}
+local dbg_dot_color = {0.1, 0.6, 0.1}
+
+function DbgDrawCircle(px: number, py: number, angle: number, rad: number)
+    gr.setColor(dbg_color)
+    gr.circle("line", px, py, rad)
+    print("circle")
+end
+
+function DbgDrawSegment(ax: number, ay: number, bx: number, by: number)
+    gr.setColor(dbg_color)
+    gr.line(ax, ay, bx, by)
+    print("segment")
+end
+
+function DbgDrawFatSegment(ax: number, ay: number, bx: number, by: number, rad: number)
+    gr.setColor(dbg_color)
+    local oldw = gr.getLineWidth()
+    gr.setLineWidth(rad)
+    gr.line(ax, ay, bx, by)
+    gr.setLineWidth(oldw)
+    print("fatsegment")
+end
+
+function DbgDrawPolygon(polygon: {number}, rad: number)
+    gr.setColor(dbg_color)
+    gr.polygon('line', polygon)
+    print("polygon")
+end
+
+function DbgDrawDot(size: number, px: number, py: number)
+    gr.setColor(dbg_dot_color)
+    gr.circle('fill', px, py, size)
+    print("dot")
+end
+
 function love.load(_: {string})
     space = wrp.space_new(.2)
     wrp.space_set(space)
-    wrp.space_set_debug_draw()
+    wrp.space_set_debug_draw(
+        DbgDrawCircle,
+        DbgDrawSegment,
+        DbgDrawFatSegment,
+        DbgDrawPolygon,
+        DbgDrawDot
+    )
     spawn()
 end
 
-local gr = love.graphics
 local tex_body = gr.newImage("body.png") as gr.Texture
 local tex_turret = gr.newImage("turret.png") as gr.Texture
 
@@ -136,17 +178,20 @@ function love.draw()
         debug_verts: {{number}}
     )
         gr.setColor{1, 0, 0, 1}
-        for _, verts in ipairs(debug_verts) do
+        if debug_verts then
+            for _, verts in ipairs(debug_verts) do
 
-            local i = 1
-            while i < #verts do
-                --verts[k] = v + x
-                verts[i] = verts[i] + x + dx
-                verts[i + 1] = verts[i + 1] + y + dy
-                i = i + 2
+                local i = 1
+                while i < #verts do
+                    --verts[k] = v + x
+                    verts[i] = verts[i] + x + dx
+                    verts[i + 1] = verts[i + 1] + y + dy
+                    i = i + 2
+                end
+
+                gr.setLineWidth(1)
+                gr.polygon('line', verts)
             end
-
-            gr.polygon('line', verts)
         end
 
         gr.setColor(white)

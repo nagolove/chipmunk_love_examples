@@ -636,7 +636,7 @@ static int tank_new(lua_State *lua) {
 // Вариант решения - вызывать функцию обратного вызова только если с момента
 // прошлого рисования произошло изменению положения, более чем на 0.5px
 // Как хранить данные о прошлом положении?
-#define LOG_ON_EACH_TANK_T
+/*#define LOG_ON_EACH_TANK_T*/
 void on_each_tank_t(cpBody *body, void *data) {
     lua_State *lua = (lua_State*)data;
 
@@ -1593,7 +1593,7 @@ void dbg_drawPolygon(
     lua_State *lua = data;
     lua_pushvalue(lua, 4);
     lua_newtable(lua);
-    int table_index = lua_gettop();
+    int table_index = lua_gettop(lua);
     int arr_index = 1;
     for (int i = 0; i < count; ++i) {
         lua_pushnumber(lua, verts[i].x);

@@ -61,14 +61,56 @@ local function spawn()
 
 end
 
+local gr = love.graphics
+local dbg_color = { 0, 0.7, 0, 1 }
+local dbg_dot_color = { 0.1, 0.6, 0.1 }
+
+function DbgDrawCircle(px, py, angle, rad)
+   gr.setColor(dbg_color)
+   gr.circle("line", px, py, rad)
+   print("circle")
+end
+
+function DbgDrawSegment(ax, ay, bx, by)
+   gr.setColor(dbg_color)
+   gr.line(ax, ay, bx, by)
+   print("segment")
+end
+
+function DbgDrawFatSegment(ax, ay, bx, by, rad)
+   gr.setColor(dbg_color)
+   local oldw = gr.getLineWidth()
+   gr.setLineWidth(rad)
+   gr.line(ax, ay, bx, by)
+   gr.setLineWidth(oldw)
+   print("fatsegment")
+end
+
+function DbgDrawPolygon(polygon, rad)
+   gr.setColor(dbg_color)
+   gr.polygon('line', polygon)
+   print("polygon")
+end
+
+function DbgDrawDot(size, px, py)
+   gr.setColor(dbg_dot_color)
+   gr.circle('fill', px, py, size)
+   print("dot")
+end
+
 function love.load(_)
    space = wrp.space_new(.2)
    wrp.space_set(space)
-   wrp.space_set_debug_draw()
+   wrp.space_set_debug_draw(
+   DbgDrawCircle,
+   DbgDrawSegment,
+   DbgDrawFatSegment,
+   DbgDrawPolygon,
+   DbgDrawDot)
+
    spawn()
 end
 
-local gr = love.graphics
 local tex_body = gr.newImage("body.png")
 local tex_turret = gr.newImage("turret.png")
 
@@ -136,17 +178,20 @@ function love.draw()
       debug_verts)
 
       gr.setColor({ 1, 0, 0, 1 })
-      for _, verts in ipairs(debug_verts) do
+      if debug_verts then
+         for _, verts in ipairs(debug_verts) do
 
-         local i = 1
-         while i < #verts do
+            local i = 1
+            while i < #verts do
 
-            verts[i] = verts[i] + x + dx
-            verts[i + 1] = verts[i + 1] + y + dy
-            i = i + 2
+               verts[i] = verts[i] + x + dx
+               verts[i + 1] = verts[i + 1] + y + dy
+               i = i + 2
+            end
+
+            gr.setLineWidth(1)
+            gr.polygon('line', verts)
          end
-
-         gr.polygon('line', verts)
       end
 
       gr.setColor(white)
@@ -154,6 +199,14 @@ function love.draw()
       gr.draw(tex_turret, quad_turret, tur_x, tur_y, tur_angle)
 
    end)
+
+   wrp.space_set_debug_draw(
+   DbgDrawCircle,
+   DbgDrawSegment,
+   DbgDrawFatSegment,
+   DbgDrawPolygon,
+   DbgDrawDot)
+
 
    draw_axises()
 end

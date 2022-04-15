@@ -1539,6 +1539,7 @@ void dbg_drawCircle(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+    LOG("dbg_drawCircle: [%s]\n", stack_dump(lua));
     lua_pushvalue(lua, 1);
     lua_pushnumber(lua, pos.x);
     lua_pushnumber(lua, pos.y);
@@ -1554,6 +1555,7 @@ void dbg_drawSegment(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+    LOG("dbg_drawSegment: [%s]\n", stack_dump(lua));
     lua_pushvalue(lua, 2);
     lua_pushnumber(lua, a.x);
     lua_pushnumber(lua, a.y);
@@ -1572,6 +1574,7 @@ void dbg_drawFatSegment(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+    LOG("dbg_drawFatSegment: [%s]\n", stack_dump(lua));
     lua_pushvalue(lua, 3);
     lua_pushnumber(lua, a.x);
     lua_pushnumber(lua, a.y);
@@ -1591,6 +1594,7 @@ void dbg_drawPolygon(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+    LOG("dbg_drawPolygon: [%s]\n", stack_dump(lua));
     lua_pushvalue(lua, 4);
     lua_newtable(lua);
     int table_index = lua_gettop(lua);
@@ -1603,7 +1607,7 @@ void dbg_drawPolygon(
     }
     lua_pushnumber(lua, radius);
     lua_call(lua, 2, 0);
-    lua_remove(lua, -1);
+    /*lua_remove(lua, -1);*/
 }
 
 void dbg_drawDot(
@@ -1613,12 +1617,20 @@ void dbg_drawDot(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+    LOG("dbg_drawDot: [%s]\n", stack_dump(lua));
     lua_pushvalue(lua, 5);
+    const char *s = lua_tostring(lua, -1);
+    LOG("S = %s\n", s);
     lua_pushnumber(lua, size);
     lua_pushnumber(lua, pos.x);
     lua_pushnumber(lua, pos.y);
     lua_call(lua, 3, 0);
     lua_remove(lua, -1);
+}
+
+cpSpaceDebugColor DebugDrawColorForShape(cpShape *shape, cpDataPointer data) {
+    cpSpaceDebugColor c = {1., 1., 1., 1.};
+    return c;
 }
 
 static int space_set_debug_draw(lua_State *lua) {
@@ -1631,6 +1643,8 @@ static int space_set_debug_draw(lua_State *lua) {
     luaL_checktype(lua, 4, LUA_TFUNCTION); // polygon
     luaL_checktype(lua, 5, LUA_TFUNCTION); // dot
 
+    LOG("space_set_debug_draw: [%s]\n", stack_dump(lua));
+
     cpSpaceDebugDrawOptions options = {
         .drawCircle = dbg_drawCircle,
         .drawSegment = dbg_drawSegment,
@@ -1640,6 +1654,11 @@ static int space_set_debug_draw(lua_State *lua) {
         .flags = CP_SPACE_DEBUG_DRAW_SHAPES | 
             CP_SPACE_DEBUG_DRAW_CONSTRAINTS |
             CP_SPACE_DEBUG_DRAW_COLLISION_POINTS,
+
+        .shapeOutlineColor = {1., 1., 1., 1.},
+        .colorForShape = DebugDrawColorForShape,
+        .constraintColor = {1., 1., 1., 1.},
+        .collisionPointColor = {1., 1., 1., 1.},
         .data = lua,
     };
 

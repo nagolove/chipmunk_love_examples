@@ -200,6 +200,14 @@ function love.draw()
 
     end)
 
+    wrp.space_set_debug_draw(
+        DbgDrawCircle,
+        DbgDrawSegment,
+        DbgDrawFatSegment,
+        DbgDrawPolygon,
+        DbgDrawDot
+    )
+
     draw_axises()
 end
 

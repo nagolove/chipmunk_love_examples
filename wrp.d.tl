@@ -21,7 +21,7 @@ local record Wrapper
     space_free: function(Space)
     space_set: function(Space)
     space_step: function(dt: number)
-    space_set_debug_draw: function(
+    space_debug_draw: function(
         DbgDrawCircle, 
         DbgDrawSegment, 
         DbgDrawFatSegment,

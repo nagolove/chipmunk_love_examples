@@ -26,6 +26,7 @@ if (!cur_space) {                                       \
 typedef struct {
     cpBody *body;
     cpBody *turret;
+    cpVect turret_rot_point;
     // индекс userdata на табличку связанную с танком
     int assoc_table_reg_index;
     // индекс userdata на танк
@@ -1519,8 +1520,12 @@ int turret_rotate(lua_State *lua) {
     double k = luaL_checknumber(lua, 2);
     // Как прикладывать силу что-бы башня вращалась через центр?
     cpVect point = { 
-        .x = 128.,
-        .y = 128.
+        /*.x = 128.,*/
+        /*.y = 128.*/
+        /*.x = 0.,*/
+        /*.y = 0.*/
+        .x = 54 / 2,
+        .y = 160 / 2,
     };
     cpVect impulse = {
         .x = k,

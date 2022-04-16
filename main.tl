@@ -13,6 +13,8 @@ local rect_body = {
     y = 73,
     w = 82,
     h = 110,
+    --w = 82,
+    --h = 82,
 }
 
 -- Кусок вырезаемый из текстуры
@@ -21,6 +23,8 @@ local rect_turret = {
     y = 0,
     w = 54,
     h = 160,
+    --w = 82,
+    --h = 82,
 }
 
 --local rect_turret = {
@@ -40,12 +44,14 @@ local init_tank = {
     -- Точки сочленения тел
     anchorA = { 0., 0. },
     anchorB = { 0., -30. },
+    --anchorB = { 0., 0. },
 
     -- Смещение координат турели
     --turret_dx = -140,
     --turret_dy = -80,
     turret_dx = 0,
     turret_dy = 0,
+    turret_rot_point = { 128., 128. },
 
     -- Размеры турели
     turret_w = rect_turret.w,
@@ -146,28 +152,28 @@ function love.update(dt: number)
 
     local kb = love.keyboard
 
-    if kb.isDown("left") then
-        --tank:apply_impulse(0, 0.1, 0, 0)
-        tank:apply_impulse(-0.2, 0, 128, 128)
-        --print('left')
-    end
-    if kb.isDown("right") then
-        --tank:apply_impulse(0, -0.1, 0, 0)
-        tank:apply_impulse(0.2, 0, 128, 128)
-        --print('right')
-    end
-
-    local k = 1
-    if kb.isDown("lshift") and kb.isDown("left") then
-        tank:turret_rotate(-k)
-    end
-    if kb.isDown("lshift") and kb.isDown("right") then
-        tank:turret_rotate(k)
-    end
-
-
+    local k = 4
     local impx = 10
     local px, py = 0, 0
+
+    if kb.isDown("lshift") then
+        if kb.isDown("left") then
+            tank:turret_rotate(-k)
+        end
+        if kb.isDown("right") then
+            tank:turret_rotate(k)
+        end
+    else
+        if kb.isDown("left") then
+            --tank:apply_impulse(0, 0.1, 0, 0)
+            tank:apply_impulse(-0.2, 0, 128, 128)
+        end
+        if kb.isDown("right") then
+            --tank:apply_impulse(0, -0.1, 0, 0)
+            tank:apply_impulse(0.2, 0, 128, 128)
+        end
+    end
+
     if kb.isDown('up') then
         tank:apply_impulse(0, -impx, px, py)
     end
@@ -236,10 +242,11 @@ function love.draw()
         --tur_y = tur_y - rect_turret.h / 2
         gr.push()
         gr.translate(x, y)
-        gr.rotate(angle)
-        gr.translate(-rect_turret.w / 2, -rect_turret.h / 2)
-        --gr.setColor {1, 1, 1, 1}
-        --gr.draw(texture, quad, 0, 0)
+        gr.rotate(tur_angle + math.pi)
+        gr.translate(
+            -rect_turret.w / 2,
+            -rect_turret.h / 2 + init_tank.anchorB[2]
+        )
         gr.draw(tex_turret, quad_turret, 0, 0)
         gr.pop()
     end)

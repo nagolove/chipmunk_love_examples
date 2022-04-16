@@ -30,13 +30,16 @@ local rect_turret = {
 
 local init_tank = {
     type = "tank",
-    x = 200,
-    y = 100,
+    x = 300,
+    y = 300,
     w = rect_body.w,
     h = rect_body.h,
 
+    anchorA = { 0., 0. },
+    anchorB = { 0., 0. },
+
     -- Смещение координат турели
-    turret_dx = -40,
+    turret_dx = -140,
     turret_dy = -80,
     --turret_dx = 0,
     --turret_dy = 0,
@@ -101,7 +104,7 @@ end
 function love.load(_: {string})
     space = wrp.space_new(.2)
     wrp.space_set(space)
-    wrp.space_set_debug_draw(
+    wrp.space_debug_draw(
         DbgDrawCircle,
         DbgDrawSegment,
         DbgDrawFatSegment,
@@ -138,6 +141,7 @@ function love.update(dt: number)
     wrp.space_step(dt)
 
     local kb = love.keyboard
+
     if kb.isDown("left") then
         --tank:apply_impulse(0, 0.1, 0, 0)
         tank:apply_impulse(-0.2, 0, 128, 128)
@@ -148,6 +152,16 @@ function love.update(dt: number)
         tank:apply_impulse(0.2, 0, 128, 128)
         --print('right')
     end
+
+    local k = 1
+    if kb.isDown("lshift") and kb.isDown("left") then
+        tank:turret_rotate(-k)
+    end
+    if kb.isDown("lshift") and kb.isDown("right") then
+        tank:turret_rotate(k)
+    end
+
+
     local impx = 10
     local px, py = 0, 0
     if kb.isDown('up') then
@@ -166,6 +180,13 @@ local function draw_axises()
     gr.setColor(blue)
     gr.line(dx, 0, dx, h)
     gr.line(0, dy, w, dy)
+end
+
+local function print_desctiption()
+    local x, y = 0., 0.
+    gr.print('chipmunk test stend', x, y)
+    y = y + gr.getFont():getHeight()
+    --gr.print('chipmunk test stend', x, y)
 end
 
 function love.draw()
@@ -200,7 +221,7 @@ function love.draw()
 
     end)
 
-    wrp.space_set_debug_draw(
+    wrp.space_debug_draw(
         DbgDrawCircle,
         DbgDrawSegment,
         DbgDrawFatSegment,
@@ -209,6 +230,7 @@ function love.draw()
     )
 
     draw_axises()
+    print_desctiption()
 end
 
 function love.resize(_: integer, _: integer)

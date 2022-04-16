@@ -7,6 +7,7 @@ local wrp = require "wrp"
 local space: wrp.Space = nil
 local tank: wrp.Tank
 
+-- Кусок вырезаемый из текстуры
 local rect_body = {
     x = 87,
     y = 73,
@@ -14,6 +15,7 @@ local rect_body = {
     h = 110,
 }
 
+-- Кусок вырезаемый из текстуры
 local rect_turret = {
     x = 101,
     y = 0,
@@ -35,22 +37,24 @@ local init_tank = {
     w = rect_body.w,
     h = rect_body.h,
 
+    -- Точки сочленения тел
     anchorA = { 0., 0. },
-    anchorB = { 0., 0. },
+    anchorB = { 0., -30. },
 
     -- Смещение координат турели
-    turret_dx = -140,
-    turret_dy = -80,
-    --turret_dx = 0,
-    --turret_dy = 0,
+    --turret_dx = -140,
+    --turret_dy = -80,
+    turret_dx = 0,
+    turret_dy = 0,
 
+    -- Размеры турели
     turret_w = rect_turret.w,
     turret_h = rect_turret.h,
 } 
 
 -- Дополнительное смещение осей координат.
-local dx = 100
-local dy = 100
+local dx = 0
+local dy = 0
 
 local counter = 1
 
@@ -71,13 +75,13 @@ local dbg_dot_color = {0.1, 0.6, 0.1}
 function DbgDrawCircle(px: number, py: number, angle: number, rad: number)
     gr.setColor(dbg_color)
     gr.circle("line", px, py, rad)
-    print("circle")
+    --print("circle")
 end
 
 function DbgDrawSegment(ax: number, ay: number, bx: number, by: number)
     gr.setColor(dbg_color)
     gr.line(ax, ay, bx, by)
-    print("segment")
+    --print("segment")
 end
 
 function DbgDrawFatSegment(ax: number, ay: number, bx: number, by: number, rad: number)
@@ -86,19 +90,19 @@ function DbgDrawFatSegment(ax: number, ay: number, bx: number, by: number, rad: 
     gr.setLineWidth(rad)
     gr.line(ax, ay, bx, by)
     gr.setLineWidth(oldw)
-    print("fatsegment")
+    --print("fatsegment")
 end
 
 function DbgDrawPolygon(polygon: {number}, rad: number)
     gr.setColor(dbg_color)
     gr.polygon('line', polygon)
-    print("polygon")
+    --print("polygon")
 end
 
 function DbgDrawDot(size: number, px: number, py: number)
     gr.setColor(dbg_dot_color)
     gr.circle('fill', px, py, size)
-    print("dot")
+    --print("dot")
 end
 
 function love.load(_: {string})
@@ -204,7 +208,8 @@ function love.draw()
 
                 local i = 1
                 while i < #verts do
-                    --verts[k] = v + x
+                    --verts[i] = verts[i] + x + dx
+                    --verts[i + 1] = verts[i + 1] + y + dy
                     verts[i] = verts[i] + x + dx
                     verts[i + 1] = verts[i + 1] + y + dy
                     i = i + 2
@@ -216,9 +221,27 @@ function love.draw()
         end
 
         gr.setColor(white)
-        gr.draw(tex_body, quad_body, x, y, angle)
-        gr.draw(tex_turret, quad_turret, tur_x, tur_y, tur_angle)
 
+        --x = x - rect_body.w / 2
+        --y = y - rect_body.h / 2
+        gr.push()
+        gr.translate(x, y)
+        gr.rotate(angle)
+        gr.translate(-rect_body.w / 2, -rect_body.h / 2)
+        --gr.draw(tex_body, quad_body, x, y, angle)
+        gr.draw(tex_body, quad_body, 0, 0)
+        gr.pop()
+
+        --tur_x = tur_x - rect_turret.w / 2
+        --tur_y = tur_y - rect_turret.h / 2
+        gr.push()
+        gr.translate(x, y)
+        gr.rotate(angle)
+        gr.translate(-rect_turret.w / 2, -rect_turret.h / 2)
+        --gr.setColor {1, 1, 1, 1}
+        --gr.draw(texture, quad, 0, 0)
+        gr.draw(tex_turret, quad_turret, 0, 0)
+        gr.pop()
     end)
 
     wrp.space_debug_draw(

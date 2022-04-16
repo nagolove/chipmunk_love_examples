@@ -913,11 +913,6 @@ void print_space_info(cpSpace *space) {
 static int query_all_tanks_t(lua_State *lua) {
     CHECK_SPACE;
     luaL_checktype(lua, 1, LUA_TFUNCTION);
-
-#ifdef LOG_QUERY_ALL_TANKS_T
-    LOG("query_all_tanks_t: [%s]\n", stack_dump(lua));
-#endif
-
     check_argsnum(lua, 1);
 
 #ifdef LOG_QUERY_ALL_TANKS_T
@@ -1622,6 +1617,7 @@ void dbg_drawFatSegment(
     lua_remove(lua, -1);
 }
 
+/*#define DBG_DRAWPOLYGON*/
 void dbg_drawPolygon(
         int count, 
         const cpVect *verts, 
@@ -1631,7 +1627,9 @@ void dbg_drawPolygon(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+#ifdef DBG_DRAWPOLYGON
     LOG("dbg_drawPolygon: [%s]\n", stack_dump(lua));
+#endif
     lua_pushvalue(lua, 4);
     lua_newtable(lua);
     int table_index = lua_gettop(lua);
@@ -1646,7 +1644,9 @@ void dbg_drawPolygon(
     lua_call(lua, 2, 0);
     /*lua_remove(lua, -1);*/
 }
+#undef DBG_DRAWPOLYGON
 
+/*#define DBG_DRAWDOT*/
 void dbg_drawDot(
         cpFloat size, 
         cpVect pos, 
@@ -1654,22 +1654,26 @@ void dbg_drawDot(
         cpDataPointer data
 ) {
     lua_State *lua = data;
+#ifdef DBG_DRAWDOT
     LOG("dbg_drawDot: [%s]\n", stack_dump(lua));
+#endif
     lua_pushvalue(lua, 5);
-    const char *s = lua_tostring(lua, -1);
-    LOG("S = %s\n", s);
+    /*const char *s = lua_tostring(lua, -1);*/
+    /*LOG("S = %s\n", s);*/
     lua_pushnumber(lua, size);
     lua_pushnumber(lua, pos.x);
     lua_pushnumber(lua, pos.y);
     lua_call(lua, 3, 0);
     /*lua_remove(lua, -1);*/
 }
+#undef DBG_DRAWDOT
 
 cpSpaceDebugColor DebugDrawColorForShape(cpShape *shape, cpDataPointer data) {
     cpSpaceDebugColor c = {1., 1., 1., 1.};
     return c;
 }
 
+/*#define SPACE_DEBUG_DRAW*/
 static int space_debug_draw(lua_State *lua) {
     CHECK_SPACE;
     check_argsnum(lua, 5);
@@ -1680,7 +1684,9 @@ static int space_debug_draw(lua_State *lua) {
     luaL_checktype(lua, 4, LUA_TFUNCTION); // polygon
     luaL_checktype(lua, 5, LUA_TFUNCTION); // dot
 
+#ifdef SPACE_DEBUG_DRAW
     LOG("space_set_debug_draw: [%s]\n", stack_dump(lua));
+#endif
 
     cpSpaceDebugDrawOptions options = {
         .drawCircle = dbg_drawCircle,
@@ -1703,6 +1709,7 @@ static int space_debug_draw(lua_State *lua) {
 
     return 0;
 }
+#undef SPACE_DEBUG_DRAW
 
 extern int luaopen_wrp(lua_State *lua) {
     static const struct luaL_Reg functions[] =

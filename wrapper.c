@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <lauxlib.h>
 #include <lua.h>
@@ -24,6 +25,8 @@ if (!cur_space) {                                       \
 }                                                       \
 
 typedef struct {
+    cpConstraint *turret_motor;
+    bool has_turret_motor;
     cpBody *body;
     cpBody *turret;
     cpVect turret_rot_point;
@@ -67,7 +70,7 @@ cpShapeFilter ALL_FILTER = { 1, CP_ALL_CATEGORIES, CP_ALL_CATEGORIES };
     do {} while(0)
 #endif
 
-#define DENSITY (1.0/10000.0)
+#define DENSITY (1.0/4000.0)
 
 void uint64t_to_bitstr(uint64_t value, char *buf) {
     assert(buf && "buf should not be a nil");
@@ -333,7 +336,7 @@ void tank_turret_new(
     lua_pushvalue(lua, init_table_index);
     // [.., tank_ud, init_table]
 
-    cpFloat mass = 5.;
+    cpFloat mass = 0.0001;
     cpFloat w = 0., h = 0;
 
     lua_pushstring(lua, "turret_w");
@@ -483,6 +486,11 @@ void tank_setup_constraints(Tank *tank, lua_State *lua, int init_table_index) {
     cpPivotJointSetAnchorA(joint, anchorA);
     cpPivotJointSetAnchorB(joint, anchorB);
     cpSpaceAddConstraint(cur_space->space, joint);
+
+    cpFloat offset = 0.;
+    tank->turret_motor = cpSimpleMotorNew(tank->body, tank->turret, offset);
+    tank->has_turret_motor = true;
+    cpSpaceAddConstraint(cur_space->space, tank->turret_motor);
 }
 
 // Кладет на стек таблицу таблиц с вершинами фигур танка.
@@ -1071,6 +1079,10 @@ static int apply_impulse(lua_State *lua) {
 
     Tank *tank = (Tank*)luaL_checkudata(lua, 1, "_Tank");
     cpBodyApplyImpulseAtLocalPoint(tank->body, impulse, point);
+    if (!tank->has_turret_motor) {
+        cpSpaceAddConstraint(cur_space->space, tank->turret_motor);
+        tank->has_turret_motor = true;
+    }
 
     return 0;
 }
@@ -1528,9 +1540,13 @@ int turret_rotate(lua_State *lua) {
         .y = 160 / 2,
     };
     cpVect impulse = {
-        .x = k,
+        .x = k / 50000.,
         .y = 0.,
     };
+    if (tank->has_turret_motor) {
+        cpSpaceRemoveConstraint(cur_space->space, tank->turret_motor);
+        tank->has_turret_motor = false;
+    }
     cpBodyApplyImpulseAtLocalPoint(tank->turret, impulse, point);
     return 0;
 }

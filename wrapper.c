@@ -27,9 +27,12 @@ if (!cur_space) {                                       \
 typedef struct {
     cpConstraint *turret_motor;
     bool has_turret_motor;
+
     cpBody *body;
     cpBody *turret;
+
     cpVect turret_rot_point;
+
     // индекс userdata на табличку связанную с танком
     int assoc_table_reg_index;
     // индекс userdata на танк
@@ -514,15 +517,9 @@ static int tank_new(lua_State *lua) {
     CHECK_SPACE;
     check_argsnum(lua, 2);
 
-    /*luaL_checktype(lua, 1, LUA_TSTRING); // type*/
-    /*luaL_checktype(lua, 2, LUA_TNUMBER); // x pos*/
-    /*luaL_checktype(lua, 3, LUA_TNUMBER); // y pos*/
-    /*luaL_checktype(lua, 4, LUA_TNUMBER); // w in pixels*/
-    /*luaL_checktype(lua, 5, LUA_TNUMBER); // h in pixels*/
-
     const int init_table_index = 1;
     luaL_checktype(lua, 1, LUA_TTABLE);  // init table
-    luaL_checktype(lua, 2, LUA_TTABLE);  // associated table
+    luaL_checktype(lua, 2, LUA_TTABLE);  // associated(self) table
 
 #ifdef LOG_TANK_NEW
     LOG("tank_new: 1 [%s]\n", stack_dump(lua));
@@ -573,6 +570,24 @@ static int tank_new(lua_State *lua) {
     pos.y = (int)lua_tonumber(lua, -1);
     lua_remove(lua, -1);
 
+    cpVect turret_rot_point = { .x = 0., .y = 0. };
+
+    // [.., init_table, assoc_table, init_table]
+    lua_pushstring(lua, "turret_rot_point");
+    lua_gettable(lua, -2);
+    // [.., init_table, assoc_table, init_table, {turret_rot_point}]
+
+    lua_rawgeti(lua, -1, 1);
+    turret_rot_point.x = (int)lua_tonumber(lua, -1);
+    lua_remove(lua, -1);
+
+    lua_rawgeti(lua, -1, 2);
+    turret_rot_point.y = (int)lua_tonumber(lua, -1);
+    lua_remove(lua, -1);
+
+    lua_remove(lua, -1);
+    // [.., init_table, assoc_table, init_table]
+
     LOG("tank_new: x, y = (%f, %f)\n", pos.x, pos.y);
 
     if (pos.x != pos.x || pos.y != pos.y ) {
@@ -621,6 +636,7 @@ static int tank_new(lua_State *lua) {
     
     tank->body = cpSpaceAddBody(cur_space->space, cpBodyNew(mass, moment));
     tank->body->userData = tank;
+    tank->turret_rot_point = turret_rot_point;
 
     cpShape *shape = cpBoxShapeNew(tank->body, w, h, 0.f);
     cpShapeFilter filter = { 
@@ -1530,15 +1546,8 @@ int get_turret_position(lua_State *lua) {
 int turret_rotate(lua_State *lua) {
     Tank *tank = luaL_checkudata(lua, 1, "_Tank");
     double k = luaL_checknumber(lua, 2);
-    // Как прикладывать силу что-бы башня вращалась через центр?
-    cpVect point = { 
-        /*.x = 128.,*/
-        /*.y = 128.*/
-        /*.x = 0.,*/
-        /*.y = 0.*/
-        .x = 54 / 2,
-        .y = 160 / 2,
-    };
+    cpVect point = tank->turret_rot_point;
+    /*LOG("turret_rotate: point(%f, %f)\n", point.x, point.y);*/
     cpVect impulse = {
         .x = k / 50000.,
         .y = 0.,

@@ -112,7 +112,7 @@ function DbgDrawDot(size, px, py)
 end
 
 function love.load(_)
-   space = wrp.space_new(.2)
+   space = wrp.space_new(.09)
    wrp.space_set(space)
    wrp.space_debug_draw(
    DbgDrawCircle,
@@ -147,6 +147,18 @@ tex_turret)
 
 
 
+
+
+
+
+
+
+
+
+ctl_movement = false
+ctl_rotatioin = false
+ctl_tur_rotation = false
+
 function love.update(dt)
    wrp.space_step(dt)
 
@@ -156,29 +168,39 @@ function love.update(dt)
    local impx = 10
    local px, py = 0, 0
 
+   ctl_rotatioin = false
+   ctl_tur_rotation = false
+   ctl_movement = false
+
    if kb.isDown("lshift") then
       if kb.isDown("left") then
          tank:turret_rotate(-k)
+         ctl_tur_rotation = true
       end
       if kb.isDown("right") then
          tank:turret_rotate(k)
+         ctl_tur_rotation = true
       end
    else
       if kb.isDown("left") then
 
          tank:apply_impulse(-0.2, 0, 128, 128)
+         ctl_rotatioin = true
       end
       if kb.isDown("right") then
 
          tank:apply_impulse(0.2, 0, 128, 128)
+         ctl_rotatioin = true
       end
    end
 
    if kb.isDown('up') then
       tank:apply_impulse(0, -impx, px, py)
+      ctl_movement = true
    end
    if kb.isDown('down') then
       tank:apply_impulse(0, impx, px, py)
+      ctl_movement = true
    end
 end
 
@@ -192,10 +214,88 @@ local function draw_axises()
    gr.line(0, dy, w, dy)
 end
 
+local font = gr.newFont(32)
+local desc_text = gr.newText(font)
+local text_pressed = { 0, 1, 0, 1 }
+local text_unpressed = { 1, 1, 1, 1 }
+local desc_table = {
+   {
+      { 1, 1, 1, 1 },
+      'up|down: ',
+      { 1, 0, 1, 1 },
+      'tank movement',
+      flag = 'ctl_movement',
+   },
+   {
+      { 1, 1, 1, 1 },
+      'left|right: ',
+      { 1, 0, 1, 1 },
+      'tank rotation',
+      flag = 'ctl_rotatioin',
+   },
+   {
+      { 1, 1, 1, 1 },
+      'shift + left|right: ',
+      { 1, 0, 1, 1 },
+      'turret rotation',
+      flag = 'ctl_tur_rotation',
+   },
+}
+
+local function desc_table_set_colors()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   for k, v in ipairs(desc_table) do
+
+
+
+
+
+
+
+
+   end
+end
+
 local function print_desctiption()
    local x, y = 0., 0.
-   gr.print('chipmunk test stend', x, y)
-   y = y + gr.getFont():getHeight()
+   gr.setFont(font)
+   gr.setColor({ 1, 1, 1, 1 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   desc_table_set_colors()
+   for _, v in ipairs(desc_table) do
+      desc_text:add(v, x, y)
+      y = y + gr.getFont():getHeight()
+   end
+   gr.draw(desc_text)
+   desc_text:clear()
 
 end
 

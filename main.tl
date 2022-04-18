@@ -112,7 +112,7 @@ function DbgDrawDot(size: number, px: number, py: number)
 end
 
 function love.load(_: {string})
-    space = wrp.space_new(.2)
+    space = wrp.space_new(.09)
     wrp.space_set(space)
     wrp.space_debug_draw(
         DbgDrawCircle,
@@ -147,6 +147,18 @@ local quad_turret = gr.newQuad(
 )
 --local quad_turret = gr.newQuad(0, 0, 256, 256, tex_turret)
 
+--[[
+local enum ContolState 
+    "movement"
+    "rotation"
+    "turret_rotation"
+end
+--]]
+
+global ctl_movement = false
+global ctl_rotatioin = false
+global ctl_tur_rotation = false
+
 function love.update(dt: number)
     wrp.space_step(dt)
 
@@ -156,29 +168,39 @@ function love.update(dt: number)
     local impx = 10
     local px, py = 0, 0
 
+    ctl_rotatioin = false
+    ctl_tur_rotation = false
+    ctl_movement = false
+
     if kb.isDown("lshift") then
         if kb.isDown("left") then
             tank:turret_rotate(-k)
+            ctl_tur_rotation = true
         end
         if kb.isDown("right") then
             tank:turret_rotate(k)
+            ctl_tur_rotation = true
         end
     else
         if kb.isDown("left") then
             --tank:apply_impulse(0, 0.1, 0, 0)
             tank:apply_impulse(-0.2, 0, 128, 128)
+            ctl_rotatioin = true
         end
         if kb.isDown("right") then
             --tank:apply_impulse(0, -0.1, 0, 0)
             tank:apply_impulse(0.2, 0, 128, 128)
+            ctl_rotatioin = true
         end
     end
 
     if kb.isDown('up') then
         tank:apply_impulse(0, -impx, px, py)
+        ctl_movement = true
     end
     if kb.isDown('down') then
         tank:apply_impulse(0, impx, px, py)
+        ctl_movement = true
     end
 end
 
@@ -192,11 +214,89 @@ local function draw_axises()
     gr.line(0, dy, w, dy)
 end
 
+local font = gr.newFont(32)
+local desc_text = gr.newText(font)
+local text_pressed = {0, 1, 0, 1}
+local text_unpressed = {1, 1, 1, 1}
+local desc_table = {
+    {
+        {1, 1, 1, 1},
+        'up|down: ',
+        {1, 0, 1, 1},
+        'tank movement',
+        flag = 'ctl_movement',
+    },
+    {
+        {1, 1, 1, 1},
+        'left|right: ',
+        {1, 0, 1, 1},
+        'tank rotation',
+        flag = 'ctl_rotatioin',
+    },
+    {
+        {1, 1, 1, 1},
+        'shift + left|right: ',
+        {1, 0, 1, 1},
+        'turret rotation',
+        flag = 'ctl_tur_rotation',
+    },
+}
+
+local function desc_table_set_colors()
+    --print(_G['ctl_movement'])
+    --[[
+    for k, v in ipairs(desc_table) do
+        for sk, sv in ipairs(v as {string}) do
+            local sv_: any = sv as any
+            if type(sv_) == 'string' then
+                if string.find(sv_ as string, 'tank movement') then
+                    print(k, v, sk, sv)
+                else
+                    print('none')
+                end
+            end
+        end
+    end
+    --]]
+    for k, v in ipairs(desc_table) do
+        --local tmp = (v as {any:any})['flag'] as string
+        --[[
+        if (v as {any:any})['flag'] and _G[tmp] then
+            v[1] = text_pressed
+        else
+            v[1] = text_unpressed
+        end
+        --]]
+    end
+end
+
 local function print_desctiption()
     local x, y = 0., 0.
+    gr.setFont(font)
+    gr.setColor {1, 1, 1, 1}
+
+--[[ {{{
     gr.print('chipmunk test stend', x, y)
     y = y + gr.getFont():getHeight()
-    --gr.print('chipmunk test stend', x, y)
+
+    gr.print('up|down: tank movement', x, y)
+    y = y + gr.getFont():getHeight()
+
+    gr.print('left|right: tank rotation', x, y)
+    y = y + gr.getFont():getHeight()
+
+    gr.print('shift + left|right: turret rotation', x, y)
+    y = y + gr.getFont():getHeight()
+--]] -- }}}
+
+    desc_table_set_colors()
+    for _, v in ipairs(desc_table) do
+        desc_text:add(v as {string}, x, y)
+        y = y + gr.getFont():getHeight()
+    end
+    gr.draw(desc_text as gr.Drawable)
+    desc_text:clear()
+
 end
 
 function love.draw()

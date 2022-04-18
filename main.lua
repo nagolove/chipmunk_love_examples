@@ -51,7 +51,8 @@ local init_tank = {
 
    turret_dx = 0,
    turret_dy = 0,
-   turret_rot_point = { 128., 128. },
+   turret_rot_point = { 127., 128. },
+
 
 
    turret_w = rect_turret.w,

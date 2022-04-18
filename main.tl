@@ -51,8 +51,8 @@ local init_tank = {
     --turret_dy = -80,
     turret_dx = 0,
     turret_dy = 0,
-    turret_rot_point = { 127., 128. },
-    --turret_rot_point = { rect_turret.w / 2., rect_turret.h / 2.},
+    --turret_rot_point = { 127., 128. },
+    turret_rot_point = { rect_turret.w / 2., rect_turret.h / 2.},
 
     -- Размеры турели
     turret_w = rect_turret.w,
